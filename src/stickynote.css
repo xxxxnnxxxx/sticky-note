@@ -1,0 +1,339 @@
+.sticky-note {
+    position: absolute; /* 改为相对页面定位 */
+    min-width: 300px;
+    max-width: 800px;
+    min-height: 250px; /* 最小高度250px */
+    max-height: 600px; /* 最大高度600px */
+    height: 350px; /* 初始高度350px */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    z-index: 1000;
+    transition: box-shadow 0.3s ease, opacity 0.3s ease;
+    resize: none; /* 禁用浏览器默认的resize */
+    pointer-events: auto; /* 确保便签本身可以接收事件 */
+    overflow: hidden; /* 防止便签本身的内容溢出 */
+}
+
+/* 内容区域需要能够选择和编辑 */
+.sticky-note .content-editable,
+.sticky-note .title-input {
+    user-select: text;
+    cursor: text;
+}
+
+.sticky-note:hover {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.sticky-note.dragging {
+    opacity: 0.8;
+    cursor: grabbing;
+    transition: none; /* 拖拽时禁用所有过渡 */
+}
+
+.sticky-note.hidden {
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.toolbar {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 8px 8px 0 0;
+    cursor: move;
+}
+
+.content-editable {
+    min-height: 120px;
+    outline: none;
+    line-height: 1.5;
+    /* 使用flex布局后不需要固定max-height，由容器控制 */
+}
+
+.title-input {
+    /* 样式由Tailwind CSS提供，这里不需要额外设置 */
+}
+
+.content-editable img {
+    max-width: calc(100% - 16px); /* 考虑padding，预留一些空间 */
+    max-height: 300px; /* 限制最大高度，防止垂直溢出 */
+    width: auto; /* 保持宽高比 */
+    height: auto; /* 保持宽高比 */
+    object-fit: contain; /* 确保图片完整显示 */
+    border-radius: 4px;
+    margin: 4px 0;
+    display: block; /* 防止基线对齐问题 */
+}
+
+/* 球形隐藏图标 */
+.hidden-note-indicator {
+    position: absolute; /* 改为页面相对定位 */
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    cursor: move;
+    z-index: 999;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    user-select: none;
+    will-change: transform; /* 优化性能 */
+}
+
+.hidden-note-indicator:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+}
+
+.hidden-note-indicator.dragging {
+    opacity: 0.8;
+    cursor: grabbing;
+    transition: none !important; /* 强制禁用所有过渡 */
+    transform: none !important; /* 强制重置transform */
+}
+
+.hidden-note-indicator::before {
+    content: "📝";
+    font-size: 16px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* 右键菜单 */
+.context-menu {
+    position: fixed; /* 固定屏幕位置 */
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    min-width: 120px;
+    z-index: 2000;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.context-menu-item:hover {
+    background-color: #f3f4f6;
+}
+
+.context-menu-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* 图片上传模态框 */
+.image-modal {
+    position: fixed; /* 模态框始终固定屏幕位置 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.image-modal-content {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+}
+
+/* 颜色选择器模态框 */
+.color-modal {
+    position: fixed; /* 固定屏幕位置 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.color-modal-content {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    max-width: 300px;
+    width: 90%;
+}
+
+.image-tabs {
+    display: flex;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.image-tab {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.image-tab.active {
+    border-bottom-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* 自定义滚动条 */
+.content-editable::-webkit-scrollbar {
+    width: 6px;
+}
+
+.content-editable::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.content-editable::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.content-editable::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* 缩放手柄样式 */
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: se-resize;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-top: 2px solid #f59e0b;
+    border-left: 2px solid #f59e0b;
+    border-radius: 4px 0 0 0;
+    z-index: 10;
+}
+
+.resize-handle:hover {
+    opacity: 1;
+}
+
+.resize-handle.dragging {
+    opacity: 1;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.sticky-note.resizing {
+    user-select: none;
+}
+
+.sticky-note {
+    position: absolute; /* 改为页面相对定位 */
+    min-width: 300px;
+    max-width: 800px;
+    min-height: 250px; /* 最小高度250px */
+    max-height: 600px; /* 最大高度600px */
+    height: 350px; /* 初始高度350px */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    z-index: 1000;
+    transition: box-shadow 0.3s ease, opacity 0.3s ease;
+    resize: none; /* 禁用浏览器默认的resize */
+    pointer-events: auto; /* 确保便签本身可以接收事件 */
+    overflow: hidden; /* 防止便签本身的内容溢出 */
+}
+
+.note-arrow {
+    position: absolute !important;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 998;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.note-arrow.hidden {
+    opacity: 0;
+}
+
+.arrow-line {
+    stroke: #f59e0b;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.arrow-head {
+    fill: #f59e0b;
+    stroke: #f59e0b;
+    stroke-width: 1;
+    pointer-events: all;
+    cursor: move;
+}
+
+.arrow-target {
+    position: absolute; /* 改为页面相对定位 */
+    width: 12px;
+    height: 12px;
+    background: #f59e0b;
+    border-radius: 50%;
+    cursor: move;
+    z-index: 999;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
+    transition: all 0.2s ease;
+    opacity: 0; /* 隐藏小圆点 */
+    pointer-events: all; /* 保持可交互性以便拖拽 */
+}
+
+.arrow-target:hover {
+    transform: scale(1.2);
+    background: #d97706;
+}
+
+.arrow-target.dragging {
+    transform: scale(1.3);
+    background: #b45309;
+}
