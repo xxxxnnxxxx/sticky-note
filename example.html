@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可拖拽便签</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" type="text/css" href="./src/stickynote.css">
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">可拖拽便签演示</h1>
+        <p class="text-gray-600 mb-8">点击下方按钮创建一个新的便签，便签可以随意拖动，支持文本格式化和图片插入。</p>
+
+        <button
+            id="createNote"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 mb-8"
+        >
+            + 创建新便签
+        </button>
+        &nbsp;&nbsp;
+        <button
+            id="createNotebyPositon"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 mb-8"
+        >
+            + 创建新便签(200,200)
+        </button>
+        &nbsp;&nbsp;
+        <button
+            id="loadNoteInfo"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 mb-8"
+        >
+            + 加载原有标签
+        </button>
+        &nbsp;&nbsp;
+        <button
+            id="enumAllOfNoteSticky"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 mb-8"
+        >
+            + 遍历所有的标签
+        </button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">功能说明</h2>
+                <ul class="text-gray-600 space-y-2">
+                    <li>• 黄色背景便签设计</li>
+                    <li>• 可输入标题和正文</li>
+                    <li>• 支持文本格式化（粗体、斜体、下划线）</li>
+                    <li>• 支持URL和文件上传插入图片</li>
+                    <li>• 可在页面内随意拖动</li>
+                    <li>• 隐藏/显示功能（点击眼睛图标）</li>
+                    <li>• 自动保存到浏览器数据库</li>
+                    <li>• 页面唯一标识，支持不同页面独立存储</li>
+                    <li>• 独立于当前网页内容</li>
+                </ul>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">使用说明</h2>
+                <ul class="text-gray-600 space-y-2">
+                    <li>• 点击"创建新便签"按钮</li>
+                    <li>• 拖动标题栏移动便签</li>
+                    <li>• <strong>拖动右下角黄色方块</strong>可以缩放便签大小</li>
+                    <li>• 选中文本后使用工具栏格式化</li>
+                    <li>• 点击图片图标插入图片（支持URL和文件上传）</li>
+                    <li>• 点击眼睛图标隐藏便签</li>
+                    <li>• <strong>拖动黄色球形图标</strong>可以移动隐藏的便签位置</li>
+                    <li>• <strong>右键点击黄色球形图标</strong>显示菜单，可选择显示或删除便签</li>
+                    <li>• 双击便签可删除</li>
+                    <li>• 所有内容自动保存，刷新页面后恢复</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 为便于测试在多个位置放置按钮 -->
+    <div style="padding: 20px;">
+        <h1 style="padding: 50px 20px; text-align: center; color: #666;">顶部内容 - 这是第一个"创建便签"按钮</h1>
+        <!-- 第一个创丝签按钮 -->
+        <button
+            id="createNote"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 mb-8"
+        >
+            + 创建新便签
+        </button>
+        
+        <p class="text-gray-600 mb-8">点击下方按钮创建一个新的便签，便签可以随意拖动，支持文本格式化和图片插入。</p>
+
+        <!-- 更多测试内容，渲染足够长的页面 -->
+        <div style="height: 100vh; background: linear-gradient(to bottom, #e0e0e0, #ffffff); padding: 30px;">
+            <h2 style="color: #666; margin-top: 100px;">中间内容区</h2>
+            <!-- 中间位置的按钮 -->
+            <button id="createNote2" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 mt-4"
+                onclick="this.style.background='orange'; alert('这是中间按钮，用来测试位置导航');"
+            >
+                中间测试按钮
+            </button>
+        </div>
+
+        <!-- 底部区域 -->
+        <div style="height: 100vh; background: linear-gradient(to bottom, #d0d0d0, #ffffff); padding: 30px;">
+            <h2 style="color: #666; margin-top: 100px;">底部内容区</h2>
+            <p style="margin: 30px 0; color: #666;">页面底部区域 - 可以在此放置更多元素用于定位测试</p>
+
+            <!-- 底部按钮 -->
+            <button id="createNote3" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 mt-4"
+                onclick="this.style.background='blue'; alert('这是底部按钮，用来测试位置导航');"
+            >
+                底部测试按钮
+            </button>
+        </div>
+    </div>
+    </div>
+    
+    <script src="./src/stickynote.js"></script>
+    <script>
+        // 创建便签按钮
+        const createBtn = document.getElementById('createNote');
+        createBtn.addEventListener('click', () => {
+            (new StickyNote()).createNote();
+        });
+
+        // 按位置创建标签
+        const createBtnbyPosition = document.getElementById('createNotebyPositon');
+        createBtnbyPosition.addEventListener('click', ()=> {
+            (new StickyNote()).createNotebyPosition(200,200);
+        });
+
+        // 加载原有便签
+        const loadNoteInfoBtn = document.getElementById('loadNoteInfo');
+        loadNoteInfoBtn.addEventListener('click', ()=>{
+            const noteInfo = `{"id":"note_1764055077431_0","title":"你好，便签","content":"收到罚单<div><br></div><div><u>啊手动阀</u></div><div><br></div><div><b>23423</b></div>","position":{"x":324.214,"y":152.597},"size":{"width":433,"height":423},"isHidden":true,"backgroundColor":"bg-teal-200","createdAt":"2025-11-25T07:17:57.433Z"}`;
+            (new StickyNote()).createNoteFromData(noteInfo);
+        });
+
+        // 遍历所有的便签
+        const enumAllOfNoteSticky = document.getElementById('enumAllOfNoteSticky');
+        enumAllOfNoteSticky.addEventListener('click', ()=>{
+            (new StickyNote()).getAllNoteStickies();
+        });
+    </script>
+</body>
+</html>
