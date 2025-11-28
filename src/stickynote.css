@@ -69,8 +69,8 @@
 /* 球形隐藏图标 */
 .hidden-note-indicator {
     position: absolute; /* 改为页面相对定位 */
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     border-radius: 50%;
     box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);

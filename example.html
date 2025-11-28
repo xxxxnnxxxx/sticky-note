@@ -113,29 +113,30 @@
     
     <script src="./src/stickynote.js"></script>
     <script>
+        var stickynoteManager = new StickyNoteManager();
         // 创建便签按钮
         const createBtn = document.getElementById('createNote');
         createBtn.addEventListener('click', () => {
-            (new StickyNote()).createNote();
+            stickynoteManager.createNote();
         });
 
         // 按位置创建标签
         const createBtnbyPosition = document.getElementById('createNotebyPositon');
         createBtnbyPosition.addEventListener('click', ()=> {
-            (new StickyNote()).createNotebyPosition(200,200);
+            stickynoteManager.createNotebyPosition(200,200);
         });
 
         // 加载原有便签
         const loadNoteInfoBtn = document.getElementById('loadNoteInfo');
         loadNoteInfoBtn.addEventListener('click', ()=>{
             const noteInfo = `{"id":"note_1764055077431_0","title":"你好，便签","content":"收到罚单<div><br></div><div><u>啊手动阀</u></div><div><br></div><div><b>23423</b></div>","position":{"x":324.214,"y":152.597},"size":{"width":433,"height":423},"isHidden":true,"backgroundColor":"bg-teal-200","createdAt":"2025-11-25T07:17:57.433Z"}`;
-            (new StickyNote()).createNoteFromData(noteInfo);
+            stickynoteManager.createNoteFromData(noteInfo);
         });
 
         // 遍历所有的便签
         const enumAllOfNoteSticky = document.getElementById('enumAllOfNoteSticky');
         enumAllOfNoteSticky.addEventListener('click', ()=>{
-            (new StickyNote()).getAllNoteStickies();
+            stickynoteManager.getAllOfNotes();
         });
     </script>
 </body>

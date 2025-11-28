@@ -1,10 +1,12 @@
 class StickyNote {
-    constructor() {
+    constructor(parentObj, pageId,index, zindex = 1000) {
+        this.parentObj = parentObj; // 记录父类对象
+        this.currentIndex = index; // 记录便签对象在管理对象中的索引
+        this.currentZIndex = zindex;
+        this.pageId = pageId; // 记录pageId
         this.noteElement = null; // 便签元素
         this.noteInfo = new Map(); // 使用Map存储便签数据
         
-        this.currentZIndex = 1000;
-        this.currentNoteId = 0;
         this.currentContentEditable = null; // 当前正在编辑的内容区域
         
         this.indicator = null; // 指示器
@@ -14,15 +16,6 @@ class StickyNote {
         this.preDocumentWidth = document.documentElement.clientWidth;
         
         this.init();
-    }
-
-    // 生成页面唯一标识
-    generatePageId() {
-        // 使用页面URL + 页面内容 + 时间戳生成唯一标识
-        const pageContent = document.documentElement.outerHTML;
-        const timestamp = Date.now();
-        const hash = this.hashCode(window.location.href + pageContent + timestamp);
-        return `page_${hash}`;
     }
 
     // 获取光标所在的最内层元素
@@ -37,17 +30,6 @@ class StickyNote {
         return container.nodeType === Node.TEXT_NODE 
             ? container.parentElement 
             : container;
-    }
-
-    // 简单的哈希函数
-    hashCode(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // 转换为32位整数
-        }
-        return Math.abs(hash);
     }
 
     moveBox(element, x, y) {
@@ -124,7 +106,7 @@ class StickyNote {
 
     // 随机位置创建便签
     async createNote() {
-        const noteId = `note_${Date.now()}_${this.currentNoteId++}`;
+        const noteId = `note_${Date.now()}`;
         this.noteElement = this.#createNoteElement();
         this.noteElement.dataset.noteId = noteId;
 
@@ -228,11 +210,11 @@ class StickyNote {
             const randomY = Math.random() * (window.innerHeight - 250);
             noteElement.style.left = `${Math.max(20, randomX)}px`;
             noteElement.style.top = `${Math.max(20, randomY)}px`;
-            noteElement.style.zIndex = this.currentZIndex++;
+            noteElement.style.zIndex = 1000;
         } else {
             noteElement.style.left = `${x}px`;
             noteElement.style.top = `${y}px`;
-            noteElement.style.zIndex = this.currentZIndex++;
+            noteElement.style.zIndex = 1000;
         }
 
         // 添加到页面
@@ -291,7 +273,7 @@ class StickyNote {
 
     // 根据位置创建便签
     async createNotebyPosition(x, y) {
-        const noteId = `note_${Date.now()}_${this.currentNoteId++}`;
+        const noteId = `note_${Date.now()}`;
         this.noteElement = this.#createNoteElement(x,y);
         this.noteElement.dataset.noteId = noteId;
         if (x > 0 && y > 0) {
@@ -401,7 +383,6 @@ class StickyNote {
         colorBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.currentNoteElement = noteElement;
-            this.currentNoteId = noteId;
             this.showColorModal();
         });
 
@@ -496,7 +477,7 @@ class StickyNote {
         noteElement.addEventListener('mousedown', (e) => {
             // 只在工具栏或便签背景上点击时置顶
             if (e.target.classList.contains('toolbar') || e.target === noteElement) {
-                noteElement.style.zIndex = this.currentZIndex++;
+                noteElement.style.zIndex = 1000;
             }
         });
     }
@@ -938,7 +919,7 @@ class StickyNote {
     }
 
     changeNoteBackgroundColor(colorClass) {
-        if (!this.currentNoteElement || !this.currentNoteId) return;
+        if (!this.currentNoteElement) return;
 
         // 移除所有背景颜色类
         const bgClasses = ['bg-yellow-200', 'bg-blue-200', 'bg-green-200', 'bg-red-200',
@@ -1258,5 +1239,61 @@ class StickyNote {
             // this.showNote(noteId);
             // indicator.remove();
         });
+    }
+}
+
+// 管理当前页面的
+class StickyNoteManager {
+    constructor(zindex =1000) {
+        this.baseZIndex = zindex; 
+        this.currentZIndex = this.baseZIndex;
+        this.currentStickyNoteIndex = 0; // 记录创建的stickynote索引
+        this.pageId = this.#generatePageId();
+
+        //
+        this.notes = new Map(); // note集合
+    }
+
+    // 简单的哈希函数
+    #hashCode(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // 转换为32位整数
+        }
+        return Math.abs(hash);
+    }
+
+    // 生成页面唯一标识
+    #generatePageId() {
+        // 使用页面URL + 页面内容 + 时间戳生成唯一标识
+        const pageContent = document.documentElement.outerHTML;
+        const timestamp = Date.now();
+        const hash = this.#hashCode(window.location.href + pageContent + timestamp);
+        return `page_${hash}`;
+    }
+
+    getAllOfNotes() {
+        return Array.from(this.notes.values());
+    }
+
+    createNote() {
+        const stickyNote = new StickyNote(this, this.pageId, this.currentStickyNoteIndex++, this.baseZIndex);
+        // 初始化一个存储对象
+        this.notes.set(this.currentStickyNoteIndex++, stickyNote);
+        stickyNote.createNote();
+    }
+
+    createNotebyPosition(x, y) {
+        const stickyNote = new StickyNote(this, this.pageId, this.currentStickyNoteIndex++, this.baseZIndex);
+        this.notes.set(this.currentStickyNoteIndex++, stickyNote);
+        stickyNote.createNotebyPosition(x,y);
+    }
+
+    createNoteFromData(content) {
+        const stickyNote = new StickyNote(this, this.pageId, this.currentStickyNoteIndex++, this.baseZIndex);
+        this.notes.set(this.currentStickyNoteIndex++, stickyNote);
+        stickyNote.createNoteFromData(content);
     }
 }
