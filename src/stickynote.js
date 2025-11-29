@@ -311,10 +311,11 @@ class StickyNote {
         this.moveBox(this.noteElement, lastLeft, lastTop);
 
         // indicator(原形标签)
-        let indicator_lastLeft = parseFloat(this.indicator.style.left) *this.roundedScale || 0;
-        let indicator_lastTop = parseFloat(this.indicator.style.top) ||0;
-        this.moveBox(this.indicator, indicator_lastLeft, indicator_lastTop);
-        
+        if (this.indicator){
+            let indicator_lastLeft = parseFloat(this.indicator.style.left) *this.roundedScale || 0;
+            let indicator_lastTop = parseFloat(this.indicator.style.top) ||0;
+            this.moveBox(this.indicator, indicator_lastLeft, indicator_lastTop);            
+        }
     }
 
     onWindowResize(event) {
@@ -1152,6 +1153,12 @@ class StickyNote {
                     x: finalLeft,
                     y: finalTop
             });
+
+            // change the note position
+            if ( this.noteElement) {
+                this.noteElement.style.left = `${finalLeft}px`;
+                this.noteElement.style.top = `${finalTop}px`;
+            }
 
             document.removeEventListener('mousemove', drag);
         };
