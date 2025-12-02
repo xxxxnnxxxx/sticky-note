@@ -1,9 +1,9 @@
 class StickyNote {
-    constructor(parentObj, pageId,index, zindex = 1000) {
+    constructor(parentObj, pageId, nodeId, zindex = 1000) {
         this.parentObj = parentObj; // 记录父类对象
-        this.currentIndex = index; // 记录便签对象在管理对象中的索引
         this.currentZIndex = zindex;
         this.pageId = pageId; // 记录pageId
+        this.noteId = nodeId;
         this.noteElement = null; // 便签元素
         this.noteInfo = new Map(); // 使用Map存储便签数据
         
@@ -36,8 +36,6 @@ class StickyNote {
         if (element) {
             element.style.left = `${x}px`;
             element.style.top = `${y}px`;
-
-            console.log(this.noteInfo.get("id"));
         } else {
             console.error('找不到box元素！');
         }
@@ -56,7 +54,6 @@ class StickyNote {
         const id = this.noteInfo.get("id");
         if (id) {
             if(this.#hasNoteSticky(id)) {
-                console.log("已存在");
                 return;
             }
         }
@@ -106,11 +103,10 @@ class StickyNote {
 
     // 随机位置创建便签
     async createNote() {
-        const noteId = `note_${Date.now()}`;
         this.noteElement = this.#createNoteElement();
-        this.noteElement.dataset.noteId = noteId;
+        this.noteElement.dataset.noteId = this.noteId;
 
-        this.noteInfo.set("id", noteId);
+        this.noteInfo.set("id", this.noteId);
         this.noteInfo.set("pageId", this.pageId);
         this.noteInfo.set("title", "");
         this.noteInfo.set("content", "");
@@ -125,8 +121,17 @@ class StickyNote {
         this.noteInfo.set("isHidden", false);
         this.noteInfo.set("backgroundColor", "bg-yellow-200");
         this.noteInfo.set("createdAt", new Date().toISOString());
+        this.noteInfo.set("zIndex", 1000);
 
-        this.setupNoteEvents(this.noteElement, noteId);
+        this.noteElement.addEventListener("click", (e)=>{
+
+            // 设置z-index
+            if (this.parentObj) {
+                this.parentObj.bringtoFront(this.noteId);
+            }
+        });
+
+        this.setupNoteEvents(this.noteElement, this.noteId);
 
         return this.noteElement;
     }
@@ -273,9 +278,8 @@ class StickyNote {
 
     // 根据位置创建便签
     async createNotebyPosition(x, y) {
-        const noteId = `note_${Date.now()}`;
         this.noteElement = this.#createNoteElement(x,y);
-        this.noteElement.dataset.noteId = noteId;
+        this.noteElement.dataset.noteId = this.noteId;
         if (x > 0 && y > 0) {
             this.noteElement.style.left = x;
             this.noteElement.style.top = y;            
@@ -283,7 +287,7 @@ class StickyNote {
 
 
         // 初始化便签数据
-        this.noteInfo.set("id", noteId);
+        this.noteInfo.set("id", this.noteId);
         this.noteInfo.set("pageId", this.pageId);
         this.noteInfo.set("title", "");
         this.noteInfo.set("content", "");
@@ -1253,12 +1257,14 @@ class StickyNote {
 class StickyNoteManager {
     constructor(zindex =1000) {
         this.baseZIndex = zindex; 
-        this.currentZIndex = this.baseZIndex;
+        this.currentMaxZIndex = this.baseZIndex; // 当前最大的z-index
         this.currentStickyNoteIndex = 0; // 记录创建的stickynote索引
         this.pageId = this.#generatePageId();
-
         //
         this.notes = new Map(); // note集合
+        // 保留目前最上层元素信息
+        this.noteIdOfTheTop = "";
+
     }
 
     // 简单的哈希函数
@@ -1286,21 +1292,55 @@ class StickyNoteManager {
     }
 
     createNote() {
-        const stickyNote = new StickyNote(this, this.pageId, this.currentStickyNoteIndex++, this.baseZIndex);
+        const noteId = `note_${Date.now()}`;
+        const stickyNote = new StickyNote(this, this.pageId, noteId, this.baseZIndex);
         // 初始化一个存储对象
-        this.notes.set(this.currentStickyNoteIndex++, stickyNote);
+        this.notes.set(noteId, stickyNote);
         stickyNote.createNote();
     }
 
     createNotebyPosition(x, y) {
-        const stickyNote = new StickyNote(this, this.pageId, this.currentStickyNoteIndex++, this.baseZIndex);
+        const noteId = `note_${Date.now()}`;
+        const stickyNote = new StickyNote(this, this.pageId, noteId, this.baseZIndex);
         this.notes.set(this.currentStickyNoteIndex++, stickyNote);
         stickyNote.createNotebyPosition(x,y);
     }
 
     createNoteFromData(content) {
-        const stickyNote = new StickyNote(this, this.pageId, this.currentStickyNoteIndex++, this.baseZIndex);
-        this.notes.set(this.currentStickyNoteIndex++, stickyNote);
+        const stickyNote = new StickyNote(this, this.pageId, "", this.baseZIndex);
         stickyNote.createNoteFromData(content);
+        this.notes.set(stickyNote.noteId, stickyNote);
     }
+
+    bringtoFront(noteId) {
+        if (this.noteIdOfTheTop == noteId)
+            return;
+        if (this.notes.size <= 1)
+            return;
+
+        if (this.currentMaxZIndex < this.notes.size + this.baseZIndex) {
+            this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex+1;
+            this.currentMaxZIndex++;
+
+            if (this.noteIdOfTheTop == ""){
+                this.noteIdOfTheTop = noteId;
+                return;                
+            }
+
+            if (this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex > this.baseZIndex){
+                this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex--;
+            }
+            this.noteIdOfTheTop = noteId;
+            
+        } else {
+            if (this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex > this.baseZIndex){
+                this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex--;
+            }
+            this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex;
+
+            this.noteIdOfTheTop = noteId;
+
+        }
+    }
+
 }
