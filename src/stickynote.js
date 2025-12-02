@@ -1317,30 +1317,32 @@ class StickyNoteManager {
             return;
         if (this.notes.size <= 1)
             return;
+        // 调整
+        // if (this.currentMaxZIndex < this.notes.size + this.baseZIndex) {
+        //     this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex+1;
+        //     this.currentMaxZIndex++;
 
-        if (this.currentMaxZIndex < this.notes.size + this.baseZIndex) {
-            this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex+1;
-            this.currentMaxZIndex++;
+        //     if (this.noteIdOfTheTop == ""){
+        //         this.noteIdOfTheTop = noteId;
+        //         return;                
+        //     }
 
-            if (this.noteIdOfTheTop == ""){
-                this.noteIdOfTheTop = noteId;
-                return;                
-            }
-
-            if (this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex > this.baseZIndex){
-                this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex--;
-            }
-            this.noteIdOfTheTop = noteId;
+        //     if (this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex > this.baseZIndex){
+        //         this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex--;
+        //     }
+        //     this.noteIdOfTheTop = noteId;
             
-        } else {
-            if (this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex > this.baseZIndex){
-                this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex--;
-            }
-            this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex;
+        // } else {
+        //     if (this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex > this.baseZIndex){
+        //         this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex--;
+        //     }
+        //     this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex;
 
-            this.noteIdOfTheTop = noteId;
+        //     this.noteIdOfTheTop = noteId;
 
-        }
+        // }
+
+        this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex++;
     }
 
 }
