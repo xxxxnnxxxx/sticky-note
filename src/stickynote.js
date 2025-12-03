@@ -57,7 +57,7 @@ class StickyNote {
                 return;
             }
         }
-
+        this.noteId = id;
         
         this.noteElement = this.#createNoteElement();
 
@@ -96,6 +96,14 @@ class StickyNote {
         if (backgroundColor) {
             this.applyBackgroundColor(this.noteElement, backgroundColor);
         }
+
+        this.noteElement.addEventListener("click", (e)=>{
+
+            // 设置z-index
+            if (this.parentObj) {
+                this.parentObj.bringtoFront(this.noteId);
+            }
+        });
 
         this.setupNoteEvents(this.noteElement, id);
         return this.noteElement;
@@ -1307,9 +1315,24 @@ class StickyNoteManager {
     }
 
     createNoteFromData(content) {
-        const stickyNote = new StickyNote(this, this.pageId, "", this.baseZIndex);
-        stickyNote.createNoteFromData(content);
-        this.notes.set(stickyNote.noteId, stickyNote);
+        if (content instanceof String || typeof content === "string"){
+            const stickyNote = new StickyNote(this, this.pageId, "", this.baseZIndex);
+            stickyNote.createNoteFromData(content);
+            this.notes.set(stickyNote.noteId, stickyNote);
+        } else if (content instanceof Object || typeof content == "object") {
+            const sz = JSON.stringify(content);
+            this.createNoteFromData(sz);
+        } else {
+            return;
+        }
+
+    }
+    // 通过json array
+    loadArrayOfNotesFromData(jsonArray){
+        const arrayOfNotes = JSON.parse(jsonArray);
+        arrayOfNotes.forEach((value)=>{
+            this.createNoteFromData(value);
+        });
     }
 
     bringtoFront(noteId) {
