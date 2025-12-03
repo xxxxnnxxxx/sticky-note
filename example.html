@@ -34,10 +34,10 @@
         </button>
         &nbsp;&nbsp;
         <button
-            id="enumAllOfNoteSticky"
+            id="serialStickyNotes"
             class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 mb-8"
         >
-            + 遍历所有的标签
+            + 序列化便签
         </button>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-lg shadow-md">
@@ -134,9 +134,10 @@
         });
 
         // 遍历所有的便签
-        const enumAllOfNoteSticky = document.getElementById('enumAllOfNoteSticky');
-        enumAllOfNoteSticky.addEventListener('click', ()=>{
-            stickynoteManager.getAllOfNotes();
+        const serialStickyNotes = document.getElementById('serialStickyNotes');
+        serialStickyNotes.addEventListener('click', ()=>{
+            let js = stickynoteManager.serializeNotes();
+            console.log(js);
         });
     </script>
 </body>
