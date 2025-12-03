@@ -50,7 +50,7 @@ class StickyNote {
     }
 
     async createNoteFromData(jsonString) {
-        this.noteInfo = this.#deserializationData(jsonString);
+        this.noteInfo = this.#deserializeData(jsonString);
         const id = this.noteInfo.get("id");
         if (id) {
             if(this.#hasNoteSticky(id)) {
@@ -64,7 +64,7 @@ class StickyNote {
         // 值配置
         // size
         const sizeWidth = this.noteInfo.get('size').get('height');
-        const sizeHeight = this.noteInfo.get("size").get("height")
+        const sizeHeight = this.noteInfo.get("size").get("height");
         // position
         const posX = this.noteInfo.get("position").get("x");
         const posY = this.noteInfo.get("position").get("y");
@@ -251,7 +251,7 @@ class StickyNote {
         return map;
     }
     // 序列化数据
-    async #serializationData() {
+    serializeData() {
         if (this.noteInfo == null)
             return;
         const jsonString = JSON.stringify(Object.fromEntries(this.noteInfo));
@@ -261,7 +261,7 @@ class StickyNote {
     }
 
     // 反序列化数据
-    #deserializationData(jsonString) {
+    #deserializeData(jsonString) {
         const data = JSON.parse(jsonString);
         return this.#convertObjectToMap(data);
     }
@@ -1317,32 +1317,32 @@ class StickyNoteManager {
             return;
         if (this.notes.size <= 1)
             return;
-        // 调整
-        // if (this.currentMaxZIndex < this.notes.size + this.baseZIndex) {
-        //     this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex+1;
-        //     this.currentMaxZIndex++;
 
-        //     if (this.noteIdOfTheTop == ""){
-        //         this.noteIdOfTheTop = noteId;
-        //         return;                
-        //     }
+        this.notes.get(noteId).noteElement.style.zIndex = ++this.currentMaxZIndex;
+        this.noteIdOfTheTop = noteId;
+    }
 
-        //     if (this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex > this.baseZIndex){
-        //         this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex--;
-        //     }
-        //     this.noteIdOfTheTop = noteId;
-            
-        // } else {
-        //     if (this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex > this.baseZIndex){
-        //         this.notes.get(this.noteIdOfTheTop).noteElement.style.zIndex--;
-        //     }
-        //     this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex;
+    // 删除指定的标签
+    delNoteByNoteId(noteId) {
+        if (this.notes){
+            this.notes.delete(noteId);
+        }
+    }
 
-        //     this.noteIdOfTheTop = noteId;
+    // 反序列化
+    deserializeNotes(content) {
 
-        // }
-
-        this.notes.get(noteId).noteElement.style.zIndex = this.currentMaxZIndex++;
+    }
+    // 序列化所有的便签
+    serializeNotes() {
+        const arrayNotes = [...this.notes.entries()].sort((a,b)=>{
+            return a[1].noteElement.style.zIndex - b[1].noteElement.style.zIndex;
+        });
+        let result = [];
+        arrayNotes.forEach((note)=>{
+            result.push(Object.fromEntries(note[1].noteInfo));
+        });
+        return JSON.stringify(result);
     }
 
 }
