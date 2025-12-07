@@ -7,7 +7,7 @@ class StickyNote {
         this.noteElement = null; // 便签元素
         this.noteInfo = new Map(); // 使用Map存储便签数据
         
-        this.currentContentEditable = null; // 当前正在编辑的内容区域
+        this.contentEditableOfObject = null; // 当前正在编辑的内容区域
         
         this.indicator = null; // 指示器
         this.imgModal = null;
@@ -16,20 +16,6 @@ class StickyNote {
         this.preDocumentWidth = document.documentElement.clientWidth;
         
         this.init();
-    }
-
-    // 获取光标所在的最内层元素
-    getElementAtCursor() {
-        const selection = window.getSelection();
-        if (selection.rangeCount === 0) return null;
-        
-        const range = selection.getRangeAt(0);
-        const container = range.commonAncestorContainer;
-        
-        // 如果容器是文本节点，返回其父元素；否则直接返回元素
-        return container.nodeType === Node.TEXT_NODE 
-            ? container.parentElement 
-            : container;
     }
 
     moveBox(element, x, y) {
@@ -45,7 +31,7 @@ class StickyNote {
 
     async init() {
         //
-        this.setupImageModal();
+        //this.setupImageModal();
         this.setupColorModal();
     }
 
@@ -387,9 +373,9 @@ class StickyNote {
         // 图片插入
         imageBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            this.currentContentEditable = contentEditable;
+            this.contentEditableOfObject = contentEditable;
             this.currentNoteIdForImage = noteId; // 使用不同的变量名避免覆盖
-            this.showImageModal();
+            this.parentObj.showImageModal(this);
         });
 
         // 背景颜色
@@ -717,145 +703,6 @@ class StickyNote {
         }
     }
 
-    setupImageModal(rootElement) {
-        if (this.imgModal != null)
-            return;
-        const imageModalString = `
-        <div id="imageModal" class="image-modal" style="display: none;">
-            <div class="image-modal-content">
-                <div class="image-tabs">
-                    <button class="image-tab active" data-tab="url">URL insert</button>
-                    <button class="image-tab" data-tab="upload">Image Upload</button>
-                </div>
-
-                <div id="urlTab" class="tab-content active">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">ImageUrl</label>
-                    <input
-                        type="url"
-                        id="imageUrl"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                        placeholder="https://example.com/image.jpg"
-                    >
-                    <div class="mt-4 flex justify-end space-x-2">
-                        <button
-                            id="cancelUrl"
-                            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            id="insertUrl"
-                            class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
-                        >
-                            Insert Image
-                        </button>
-                    </div>
-                </div>
-
-                <div id="uploadTab" class="tab-content">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Select an image</label>
-                    <input
-                        type="file"
-                        id="imageFile"
-                        accept="image/*"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                    >
-                    <div class="mt-4 flex justify-end space-x-2">
-                        <button
-                            id="cancelUpload"
-                            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            id="insertUpload"
-                            class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
-                        >
-                            Upload and Insert
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        `;
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(imageModalString, 'text/html');
-        this.imgModal = doc.body.firstChild;
-        document.body.appendChild(this.imgModal);
-        // this.imgModal = document.createElement();
-        // this.imgModal.innerHTML = imageModalString.replace(/<\/?template[^>]*>/g, '').trim();
-        if (rootElement == null){
-            const bodyElement = document.body;
-            bodyElement.appendChild(this.imgModal);
-        } else {
-
-        }
-        const tabs = this.imgModal.querySelectorAll('.image-tab');
-        const tabContents = this.imgModal.querySelectorAll('.tab-content');
-        const cancelUrl = this.imgModal.querySelector('#cancelUrl');
-        const insertUrl = this.imgModal.querySelector('#insertUrl');
-        const cancelUpload = this.imgModal.querySelector('#cancelUpload');
-        const insertUpload = this.imgModal.querySelector('#insertUpload');
-        const imageUrl = this.imgModal.querySelector('#imageUrl');
-        const imageFile = this.imgModal.querySelector('#imageFile');
-
-        // 标签切换
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-
-                // 更新激活状态
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-
-                tab.classList.add('active');
-                document.getElementById(`${tabName}Tab`).classList.add('active');
-            });
-        });
-
-        // 取消按钮
-        cancelUrl.addEventListener('click', () => this.hideImageModal());
-        cancelUpload.addEventListener('click', () => this.hideImageModal());
-
-        // URL插入
-        insertUrl.addEventListener('click', () => {
-            const url = imageUrl.value.trim();
-            if (url) {
-                this.insertImageFromUrl(url);
-                this.hideImageModal();
-            }
-        });
-
-        // 文件上传
-        insertUpload.addEventListener('click', () => {
-            const file = imageFile.files[0];
-            if (file) {
-                this.insertImageFromFile(file);
-            }
-        });
-
-        // 点击模态框外部关闭
-        this.imgModal.addEventListener('click', (e) => {
-            if (e.target === this.imgModal) {
-                this.hideImageModal();
-            }
-        });
-    }
-
-    showImageModal() {
-        if (this.imgModal == null)
-            return;
-        this.imgModal.style.display = 'flex';
-
-        // 重置表单
-        this.imgModal.querySelector('#imageUrl').value = '';
-        this.imgModal.querySelector('#imageFile').value = '';
-    }
-
-    hideImageModal() {
-        this.imgModal.style.display = 'none';
-    }
-
     setupColorModal(rootElement) {
         if (this.colorModalDialog != null)
             return;
@@ -1000,91 +847,6 @@ class StickyNote {
             });
             toolbar.classList.add(borderColor);
         }
-    }
-
-    insertImageFromUrl(url) {
-        if (!this.currentContentEditable) return;
-
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = '插入的图片';
-        img.onload = () => {
-            // 图片加载完成后，确保其大小符合要求
-            this.normalizeImageSize(img);
-            this.insertImageElement(img);
-        };
-        img.onerror = () => {
-            alert('图片加载失败，请检查URL是否正确');
-            img.remove();
-        };
-
-        this.insertImageElement(img);
-    }
-
-    // 规范化图片大小，确保不溢出
-    normalizeImageSize(img) {
-        // 设置图片样式以确保正确显示
-        img.style.maxWidth = '100%';
-        img.style.height = 'auto';
-        img.style.display = 'block';
-        img.style.borderRadius = '4px';
-        img.style.margin = '4px 0';
-    }
-
-    insertImageFromFile(file) {
-        if (!this.currentContentEditable) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.alt = file.name;
-            img.onload = () => {
-                // 图片加载完成后，确保其大小符合要求
-                this.normalizeImageSize(img);
-                this.insertImageElement(img);
-                this.hideImageModal();
-            };
-            img.onerror = () => {
-                alert('图片加载失败');
-                this.hideImageModal();
-            };
-        };
-        reader.readAsDataURL(file);
-    }
-
-    insertImageElement(img) {
-        const contentEditable = this.currentContentEditable;
-
-        // 插入图片到光标位置
-        const selection = window.getSelection();
-        const contentEditor = this.noteElement.querySelector(".content-editor-marker");
-        
-
-        const eleOfselection = this.getElementAtCursor();
-        if (contentEditor != eleOfselection)
-        {
-            contentEditable.appendChild(img);
-            contentEditable.appendChild(document.createElement('br'));
-        } else {
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                range.insertNode(img);
-                // 在图片后添加换行
-                range.insertNode(document.createElement('br'));
-            } else {
-                contentEditable.appendChild(img);
-                contentEditable.appendChild(document.createElement('br'));
-            }
-
-            contentEditable.focus();
-
-            // 更新数据库
-            if (this.currentNoteIdForImage) {
-                this.updateNoteData('content', contentEditable.innerHTML);
-            }            
-        }
-
     }
 
     // 球形指示器拖动功能
@@ -1268,10 +1030,271 @@ class StickyNoteManager {
         this.currentMaxZIndex = this.baseZIndex; // 当前最大的z-index
         this.currentStickyNoteIndex = 0; // 记录创建的stickynote索引
         this.pageId = this.#generatePageId();
+        // 
+        this.imgModal = null; // 文件上传对话框
+        this.currentNote = null; // 编辑内容框
+        this.currentContentEditable = null;
         //
         this.notes = new Map(); // note集合
         // 保留目前最上层元素信息
         this.noteIdOfTheTop = "";
+
+        // 初始化
+        this.init();
+    }
+
+    async init(){
+        this.setupImageModal();
+    }
+
+    // 获取光标所在的最内层元素
+    getElementAtCursor() {
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return null;
+        
+        const range = selection.getRangeAt(0);
+        const container = range.commonAncestorContainer;
+        
+        // 如果容器是文本节点，返回其父元素；否则直接返回元素
+        return container.nodeType === Node.TEXT_NODE 
+            ? container.parentElement 
+            : container;
+    }
+
+    setupImageModal(rootElement) {
+        if (this.imgModal != null)
+            return;
+        const imageModalString = `
+        <div id="imageModal" class="image-modal" style="display: none;">
+            <div class="image-modal-content">
+                <div class="image-tabs">
+                    <button class="image-tab active" data-tab="url">URL insert</button>
+                    <button class="image-tab" data-tab="upload">Image Upload</button>
+                </div>
+
+                <div id="urlTab" class="tab-content active">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ImageUrl</label>
+                    <input
+                        type="url"
+                        id="imageUrl"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                        placeholder="https://example.com/image.jpg"
+                    >
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button
+                            id="cancelUrl"
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            id="insertUrl"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
+                        >
+                            Insert Image
+                        </button>
+                    </div>
+                </div>
+
+                <div id="uploadTab" class="tab-content">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select an image</label>
+                    <input
+                        type="file"
+                        id="imageFile"
+                        accept="image/*"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                    >
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button
+                            id="cancelUpload"
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            id="insertUpload"
+                            class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
+                        >
+                            Upload and Insert
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(imageModalString, 'text/html');
+        this.imgModal = doc.body.firstChild;
+        document.body.appendChild(this.imgModal);
+        // this.imgModal = document.createElement();
+        // this.imgModal.innerHTML = imageModalString.replace(/<\/?template[^>]*>/g, '').trim();
+        if (rootElement == null){
+            const bodyElement = document.body;
+            bodyElement.appendChild(this.imgModal);
+        } else {
+
+        }
+        const tabs = this.imgModal.querySelectorAll('.image-tab');
+        const tabContents = this.imgModal.querySelectorAll('.tab-content');
+        const cancelUrl = this.imgModal.querySelector('#cancelUrl');
+        const insertUrl = this.imgModal.querySelector('#insertUrl');
+        const cancelUpload = this.imgModal.querySelector('#cancelUpload');
+        const insertUpload = this.imgModal.querySelector('#insertUpload');
+        const imageUrl = this.imgModal.querySelector('#imageUrl');
+        const imageFile = this.imgModal.querySelector('#imageFile');
+
+        // 标签切换
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+
+                // 更新激活状态
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                document.getElementById(`${tabName}Tab`).classList.add('active');
+            });
+        });
+
+        // 取消按钮
+        cancelUrl.addEventListener('click', () => this.hideImageModal());
+        cancelUpload.addEventListener('click', () => this.hideImageModal());
+
+        // URL插入
+        insertUrl.addEventListener('click', () => {
+            const url = imageUrl.value.trim();
+            if (url) {
+                this.insertImageFromUrl(url);
+                this.hideImageModal();
+            }
+        });
+
+        // 文件上传
+        insertUpload.addEventListener('click', () => {
+            const file = imageFile.files[0];
+            if (file) {
+                this.insertImageFromFile(file);
+            }
+        });
+
+        // 点击模态框外部关闭
+        this.imgModal.addEventListener('click', (e) => {
+            if (e.target === this.imgModal) {
+                this.hideImageModal();
+            }
+        });
+    }
+
+    showImageModal(note) {
+        if (this.imgModal == null)
+            return;
+        this.currentNote = note;
+        this.imgModal.style.display = 'flex';
+
+        // 重置表单
+        this.imgModal.querySelector('#imageUrl').value = '';
+        this.imgModal.querySelector('#imageFile').value = '';
+    }
+
+    hideImageModal() {
+        this.imgModal.style.display = 'none';
+        this.noteElement = null;
+    }
+
+    insertImageFromUrl(url) {
+        if (this.note.noteElement == null){
+            return;
+        }
+        if (this.note.noteElement == null)
+            return 
+        if (this.note.noteElement.contentEditableOfObject == null)
+            return;
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = '插入的图片';
+        img.onload = () => {
+            // 图片加载完成后，确保其大小符合要求
+            this.normalizeImageSize(img);
+            this.insertImageElement(img);
+        };
+        img.onerror = () => {
+            alert('图片加载失败，请检查URL是否正确');
+            img.remove();
+        };
+
+        this.insertImageElement(img);
+    }
+
+    // 规范化图片大小，确保不溢出
+    normalizeImageSize(img) {
+        // 设置图片样式以确保正确显示
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.display = 'block';
+        img.style.borderRadius = '4px';
+        img.style.margin = '4px 0';
+    }
+
+    insertImageFromFile(file) {
+        if (this.currentNote == null)
+            return;
+        if (this.currentNote.noteElement == null)
+            return 
+        if (this.currentNote.contentEditableOfObject == null)
+            return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = file.name;
+            img.onload = () => {
+                // 图片加载完成后，确保其大小符合要求
+                this.normalizeImageSize(img);
+                this.insertImageElement(img);
+                this.hideImageModal();
+            };
+            img.onerror = () => {
+                alert('图片加载失败');
+                this.hideImageModal();
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+
+    insertImageElement(img) {
+        const contentEditable = this.currentNote.contentEditableOfObject;
+
+        // 插入图片到光标位置
+        const selection = window.getSelection();
+        const contentEditor = this.currentNote.noteElement.querySelector(".content-editor-marker");
+        
+
+        const eleOfselection = this.getElementAtCursor();
+        if (contentEditor != eleOfselection)
+        {
+            contentEditable.appendChild(img);
+            contentEditable.appendChild(document.createElement('br'));
+        } else {
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.insertNode(img);
+                // 在图片后添加换行
+                range.insertNode(document.createElement('br'));
+            } else {
+                contentEditable.appendChild(img);
+                contentEditable.appendChild(document.createElement('br'));
+            }
+
+            contentEditable.focus();
+
+            // 更新数据库
+            if (this.noteElement.currentNoteIdForImage) {
+                this.noteElement.updateNoteData('content', contentEditable.innerHTML);
+            }            
+        }
 
     }
 
