@@ -129,8 +129,82 @@
         // 加载原有便签
         const loadNoteInfoBtn = document.getElementById('loadNoteInfo');
         loadNoteInfoBtn.addEventListener('click', ()=>{
-            const noteInfo = `{"id":"note_1764055077431_0","title":"你好，便签","content":"收到罚单<div><br></div><div><u>啊手动阀</u></div><div><br></div><div><b>23423</b></div>","position":{"x":324.214,"y":152.597},"size":{"width":433,"height":423},"isHidden":true,"backgroundColor":"bg-teal-200","createdAt":"2025-11-25T07:17:57.433Z"}`;
-            stickynoteManager.createNoteFromData(noteInfo);
+            const noteInfo = `[
+    {
+        "id": "note_1764748828742",
+        "pageId": "page_1079185526",
+        "title": "",
+        "content": "",
+        "position": {
+            "x": 1027.68,
+            "y": 316.106
+        },
+        "size": {
+            "width": 300,
+            "height": 350
+        },
+        "isHidden": false,
+        "backgroundColor": "bg-yellow-200",
+        "createdAt": "2025-12-03T08:00:28.743Z",
+        "zIndex": 1000
+    },
+    {
+        "id": "note_1764748828466",
+        "pageId": "page_1079185526",
+        "title": "",
+        "content": "",
+        "position": {
+            "x": 1496.48,
+            "y": 157.244
+        },
+        "size": {
+            "width": 300,
+            "height": 350
+        },
+        "isHidden": false,
+        "backgroundColor": "bg-yellow-200",
+        "createdAt": "2025-12-03T08:00:28.467Z",
+        "zIndex": 1000
+    },
+    {
+        "id": "note_1764748829117",
+        "pageId": "page_1079185526",
+        "title": "",
+        "content": "",
+        "position": {
+            "x": 752.358,
+            "y": 291.306
+        },
+        "size": {
+            "width": 300,
+            "height": 350
+        },
+        "isHidden": false,
+        "backgroundColor": "bg-yellow-200",
+        "createdAt": "2025-12-03T08:00:29.118Z",
+        "zIndex": 1000
+    },
+    {
+        "id": "note_1764748828929",
+        "pageId": "page_1079185526",
+        "title": "",
+        "content": "",
+        "position": {
+            "x": 234.818,
+            "y": 347.483
+        },
+        "size": {
+            "width": 300,
+            "height": 350
+        },
+        "isHidden": false,
+        "backgroundColor": "bg-yellow-200",
+        "createdAt": "2025-12-03T08:00:28.931Z",
+        "zIndex": 1000
+    }
+]`;
+            const dd = `aafd`;
+            stickynoteManager.loadArrayOfNotesFromData(noteInfo);
         });
 
         // 遍历所有的便签

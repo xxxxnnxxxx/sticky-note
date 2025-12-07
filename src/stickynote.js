@@ -1374,11 +1374,6 @@ class StickyNoteManager {
             this.notes.delete(noteId);
         }
     }
-
-    // 反序列化
-    deserializeNotes(content) {
-
-    }
     // 序列化所有的便签
     serializeNotes() {
         const arrayNotes = [...this.notes.entries()].sort((a,b)=>{
