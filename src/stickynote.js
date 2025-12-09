@@ -31,8 +31,8 @@ class StickyNote {
 
     async init() {
         //
-        //this.setupImageModal();
-        this.setupColorModal();
+        // this.setupImageModal();
+        // this.setupColorModal();
     }
 
     async createNoteFromData(jsonString) {
@@ -382,7 +382,7 @@ class StickyNote {
         colorBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.currentNoteElement = noteElement;
-            this.showColorModal();
+            this.parentObj.showColorModal(this);
         });
 
         // 内容变化监听
@@ -703,119 +703,6 @@ class StickyNote {
         }
     }
 
-    setupColorModal(rootElement) {
-        if (this.colorModalDialog != null)
-            return;
-        const colorModalDialogString = `
-        <!-- 颜色选择器模态框 -->
-        <div id="colorModal" class="color-modal" style="display: none;">
-            <div class="color-modal-content">
-                <h3 class="text-lg font-semibold mb-4">选择便签背景颜色</h3>
-                <div class="color-grid grid grid-cols-5 gap-3 mb-4">
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-yellow-200" style="background-color: #fef9c3;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-blue-200" style="background-color: #dbeafe;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-green-200" style="background-color: #dcfce7;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-red-200" style="background-color: #fecaca;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-purple-200" style="background-color: #e9d5ff;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-pink-200" style="background-color: #fbcfe8;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-indigo-200" style="background-color: #c7d2fe;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-teal-200" style="background-color: #99f6e4;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-orange-200" style="background-color: #fed7aa;"></div>
-                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-gray-200" style="background-color: #e5e7eb;"></div>
-                </div>
-                <div class="flex justify-end space-x-2">
-                    <button
-                        id="cancelColor"
-                        class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-                    >
-                        取消
-                    </button>
-                </div>
-            </div>
-        </div>
-        `;
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(colorModalDialogString, 'text/html');
-        this.colorModalDialog = doc.body.firstChild;
-        if (rootElement == null){
-            const bodyElement = document.body;
-            bodyElement.appendChild(this.colorModalDialog);
-        } else {
-
-        }
-        const colorOptions = this.colorModalDialog.querySelectorAll('.color-option');
-        const cancelColor = this.colorModalDialog.querySelector('#cancelColor');
-        
-        // 颜色选项点击
-        colorOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                const colorClass = option.dataset.color;
-                this.changeNoteBackgroundColor(colorClass);
-                this.hideColorModal();
-            });
-        });
-
-        // 取消按钮
-        cancelColor.addEventListener('click', () => this.hideColorModal());
-
-        // 点击模态框外部关闭
-        this.colorModalDialog.addEventListener('click', (e) => {
-            if (e.target === this.colorModalDialog) {
-                this.hideColorModal();
-            }
-        });
-    }
-
-    showColorModal() {
-        if (this.colorModalDialog == null)
-            return;
-        this.colorModalDialog.style.display = 'flex';
-    }
-
-    hideColorModal() {
-        if (this.colorModalDialog == null)
-            return;
-        this.colorModalDialog.style.display = 'none';
-    }
-
-    changeNoteBackgroundColor(colorClass) {
-        if (!this.currentNoteElement) return;
-
-        // 移除所有背景颜色类
-        const bgClasses = ['bg-yellow-200', 'bg-blue-200', 'bg-green-200', 'bg-red-200',
-                            'bg-purple-200', 'bg-pink-200', 'bg-indigo-200', 'bg-teal-200',
-                            'bg-orange-200', 'bg-gray-200'];
-        bgClasses.forEach(cls => {
-            this.currentNoteElement.classList.remove(cls);
-        });
-
-        // 添加新的背景颜色类
-        this.currentNoteElement.classList.add(colorClass);
-
-        // 更新边框颜色以匹配背景
-        const borderColor = colorClass.replace('bg-', 'border-');
-        const borderClasses = ['border-yellow-300', 'border-blue-300', 'border-green-300',
-                                'border-red-300', 'border-purple-300', 'border-pink-300',
-                                'border-indigo-300', 'border-teal-300', 'border-orange-300',
-                                'border-gray-300'];
-        borderClasses.forEach(cls => {
-            this.currentNoteElement.classList.remove(cls);
-        });
-        this.currentNoteElement.classList.add(borderColor);
-
-        // 更新工具栏边框
-        const toolbar = this.currentNoteElement.querySelector('.toolbar');
-        if (toolbar) {
-            borderClasses.forEach(cls => {
-                toolbar.classList.remove(cls);
-            });
-            toolbar.classList.add(borderColor);
-        }
-
-        // 保存颜色设置到数据库
-        this.updateNoteData('backgroundColor', colorClass);
-    }
-
     applyBackgroundColor(noteElement, colorClass) {
         // 移除所有背景颜色类
         const bgClasses = ['bg-yellow-200', 'bg-blue-200', 'bg-green-200', 'bg-red-200',
@@ -1030,11 +917,13 @@ class StickyNoteManager {
         this.currentMaxZIndex = this.baseZIndex; // 当前最大的z-index
         this.currentStickyNoteIndex = 0; // 记录创建的stickynote索引
         this.pageId = this.#generatePageId();
-        // 
+        // 文件上传对话框
         this.imgModal = null; // 文件上传对话框
-        this.currentNote = null; // 编辑内容框
-        this.currentContentEditable = null;
-        //
+        this.currentNote = null; // 当前
+        this.currentContentEditable = null; 
+        // 颜色对话框
+        this.colorModal = null;
+        // 
         this.notes = new Map(); // note集合
         // 保留目前最上层元素信息
         this.noteIdOfTheTop = "";
@@ -1045,6 +934,7 @@ class StickyNoteManager {
 
     async init(){
         this.setupImageModal();
+        this.setupColorModal();
     }
 
     // 获取光标所在的最内层元素
@@ -1126,8 +1016,6 @@ class StickyNoteManager {
         const doc = parser.parseFromString(imageModalString, 'text/html');
         this.imgModal = doc.body.firstChild;
         document.body.appendChild(this.imgModal);
-        // this.imgModal = document.createElement();
-        // this.imgModal.innerHTML = imageModalString.replace(/<\/?template[^>]*>/g, '').trim();
         if (rootElement == null){
             const bodyElement = document.body;
             bodyElement.appendChild(this.imgModal);
@@ -1199,7 +1087,7 @@ class StickyNoteManager {
 
     hideImageModal() {
         this.imgModal.style.display = 'none';
-        this.noteElement = null;
+        this.currentNote = null;
     }
 
     insertImageFromUrl(url) {
@@ -1226,6 +1114,122 @@ class StickyNoteManager {
 
         this.insertImageElement(img);
     }
+
+    setupColorModal(rootElement) {
+        if (this.colorModal != null)
+            return;
+        const colorModalString = `
+        <!-- 颜色选择器模态框 -->
+        <div id="colorModal" class="color-modal" style="display: none;">
+            <div class="color-modal-content">
+                <h3 class="text-lg font-semibold mb-4">选择便签背景颜色</h3>
+                <div class="color-grid grid grid-cols-5 gap-3 mb-4">
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-yellow-200" style="background-color: #fef9c3;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-blue-200" style="background-color: #dbeafe;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-green-200" style="background-color: #dcfce7;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-red-200" style="background-color: #fecaca;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-purple-200" style="background-color: #e9d5ff;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-pink-200" style="background-color: #fbcfe8;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-indigo-200" style="background-color: #c7d2fe;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-teal-200" style="background-color: #99f6e4;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-orange-200" style="background-color: #fed7aa;"></div>
+                    <div class="color-option w-8 h-8 rounded cursor-pointer border border-gray-300 hover:scale-110 transition-transform" data-color="bg-gray-200" style="background-color: #e5e7eb;"></div>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button
+                        id="cancelColor"
+                        class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+        `;
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(colorModalString, 'text/html');
+        this.colorModal = doc.body.firstChild;
+        if (rootElement == null){
+            const bodyElement = document.body;
+            bodyElement.appendChild(this.colorModal);
+        } else {
+
+        }
+        const colorOptions = this.colorModal.querySelectorAll('.color-option');
+        const cancelColor = this.colorModal.querySelector('#cancelColor');
+        
+        // 颜色选项点击
+        colorOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const colorClass = option.dataset.color;
+                this.changeNoteBackgroundColor(colorClass);
+                this.hideColorModal();
+            });
+        });
+
+        // 取消按钮
+        cancelColor.addEventListener('click', () => this.hideColorModal());
+
+        // 点击模态框外部关闭
+        this.colorModal.addEventListener('click', (e) => {
+            if (e.target === this.colorModal) {
+                this.hideColorModal();
+            }
+        });
+    }
+
+    showColorModal(note) {
+        if (this.colorModal == null)
+            return;
+        this.currentNote = note;
+        this.colorModal.style.display = 'flex';
+    }
+
+    hideColorModal() {
+        if (this.colorModal == null)
+            return;
+        this.colorModal.style.display = 'none';
+        this.currentNote = null;
+    }
+
+    changeNoteBackgroundColor(colorClass) {
+        if (!this.currentNote) return;
+
+        // 移除所有背景颜色类
+        const bgClasses = ['bg-yellow-200', 'bg-blue-200', 'bg-green-200', 'bg-red-200',
+                            'bg-purple-200', 'bg-pink-200', 'bg-indigo-200', 'bg-teal-200',
+                            'bg-orange-200', 'bg-gray-200'];
+        bgClasses.forEach(cls => {
+            this.currentNote.noteElement.classList.remove(cls);
+        });
+
+        // 添加新的背景颜色类
+        this.currentNote.noteElement.classList.add(colorClass);
+
+        // 更新边框颜色以匹配背景
+        const borderColor = colorClass.replace('bg-', 'border-');
+        const borderClasses = ['border-yellow-300', 'border-blue-300', 'border-green-300',
+                                'border-red-300', 'border-purple-300', 'border-pink-300',
+                                'border-indigo-300', 'border-teal-300', 'border-orange-300',
+                                'border-gray-300'];
+        borderClasses.forEach(cls => {
+            this.currentNote.noteElement.classList.remove(cls);
+        });
+        this.currentNote.noteElement.classList.add(borderColor);
+
+        // 更新工具栏边框
+        const toolbar = this.currentNote.noteElement.querySelector('.toolbar');
+        if (toolbar) {
+            borderClasses.forEach(cls => {
+                toolbar.classList.remove(cls);
+            });
+            toolbar.classList.add(borderColor);
+        }
+
+        // 保存颜色设置到数据库
+        this.currentNote.updateNoteData('backgroundColor', colorClass);
+    }
+
 
     // 规范化图片大小，确保不溢出
     normalizeImageSize(img) {
